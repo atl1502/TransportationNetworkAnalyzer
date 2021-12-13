@@ -51,18 +51,12 @@ AdjList::AdjList(std::string vertexFile, std::string edgeFile){
     std::string start;
     std::string end;
     while(edgFile >> edgeID >> start >> end){
-      std::cout << edgeID << '\n';
       insertEdge(edgeID, findVertex(start), findVertex(end));
     }
     vertFile.close();
     edgFile.close();
     std::list<AdjList::VertexNode*> n;
-    for(auto node : vertexList){
-      if(!(node->edges.empty()))
-        n.push_back(node);
-    }
-    vertexList.clear();
-    vertexList = n;
+    std::list<AdjList::VertexNode*> del;
 }
 
 //****Rule of 3***
@@ -72,6 +66,11 @@ AdjList::~AdjList(){
         Implemented removeVertex function to also removeEdges and delete memory accordingly.
         removeVertex also erases the
     */
+    while(edgeList.begin() != edgeList.end())
+    {
+        auto itr = edgeList.begin();
+        removeEdge((*itr)->ID);
+    }
     while(vertexList.begin() != vertexList.end())
     {
         auto itr = vertexList.begin();
@@ -164,6 +163,7 @@ void AdjList::insertEdge(std::string name, VertexNode* start, VertexNode* end){
     newEdgePtr->distance = distance(start, end);
     edgeList.push_back(newEdgePtr);
     start->edges.push_back(newEdgePtr);
+    end->asEnd.push_back(newEdgePtr);
     std::pair<VertexNode*, VertexNode*> route (start, end);
     newEdgePtr->ends= route;
     //Comment this out on larger datasets
@@ -249,6 +249,12 @@ void AdjList::removeVertex(std::string name){
         removeEdge(vptr->edges.front()->ID);
         size--;
     }
+    size = vptr->asEnd.size();
+    while(size > 0)
+    {
+        removeEdge(vptr->asEnd.front()->ID);
+        size--;
+    }
     //Now remove the vertex from our overall list of vertices
     for(std::list<VertexNode*>::iterator itr = vertexList.begin(); itr != vertexList.end(); itr++)
     {
@@ -295,9 +301,8 @@ void AdjList::removeEdge(std::string name){
             break;
         }
     }
-    //TODO: what is endPtr it isn't declared anywhere and is throwing a lot of errors
     //I think the second for loop is suppose to remove the edge in the edge list of the second node of the pair. Switched endPtr to destPtr
-    for(std::list<EdgeNode*>::iterator enditr = destPtr->edges.begin(); enditr != destPtr->edges.end(); enditr++)
+    for(std::list<EdgeNode*>::iterator enditr = destPtr->asEnd.begin(); enditr != destPtr->asEnd.end(); enditr++)
     {
         if((*enditr)->ID == edgePtr->ID)
         {

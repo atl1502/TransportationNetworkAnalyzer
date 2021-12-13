@@ -31,6 +31,7 @@ class AdjList
       double latitude;
       double longitude;
       std::list<EdgeNode*> edges;
+      std::list<EdgeNode*> asEnd;
     };
     std::list<VertexNode*> vertexList;
     std::list<EdgeNode*> edgeList;
